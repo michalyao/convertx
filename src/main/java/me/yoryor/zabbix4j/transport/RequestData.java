@@ -5,12 +5,12 @@ import lombok.Data;
 
 import java.util.Map;
 
+/**
+ * 用于构建HTTP请求
+ */
 @Data
 @Builder
 public class RequestData {
-    private String jsonrpc;
-    private Map<String, Object> params;
-    private String method;
-    private String auth;
-    private Integer id;
+    private Map<String, Object> payload;
+    private RpcAttribute rpcAttribute;
 }
