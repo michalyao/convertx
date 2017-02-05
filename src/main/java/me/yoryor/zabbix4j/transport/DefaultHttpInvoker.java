@@ -13,23 +13,20 @@ import java.io.IOException;
 import static com.ning.http.client.AsyncHttpClientConfig.Builder;
 
 public class DefaultHttpInvoker implements HttpInvoker {
-    private static final String RPC_ADDR = "http://192.168.116.131/zabbix/api_jsonrpc.php";
-
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHttpInvoker.class);
-    private AsyncHttpClient asyncHttpClient;
+    private final AsyncHttpClient asyncHttpClient;
+    private final String baseUrl;
 
     public DefaultHttpInvoker(Config config) {
-        AsyncHttpClientConfig asyncHttpClientConfig = new Builder().setConnectTimeout(config.getConnectTimeout())
-                .setReadTimeout(config.getReadTimeout())
-                .setMaxRequestRetry(config.getMaxRequestRetry())
-                .setRequestTimeout(config.getRequestTimeout())
+        Config.HttpConfig httpConfig = config.getHttpConfig();
+        AsyncHttpClientConfig asyncHttpClientConfig = new Builder().setConnectTimeout(httpConfig.getConnectTimeout())
+                .setReadTimeout(httpConfig.getReadTimeout())
+                .setMaxRequestRetry(httpConfig.getMaxRequestRetry())
+                .setRequestTimeout(httpConfig.getRequestTimeout())
                 .setAcceptAnyCertificate(true)
                 .build();
         this.asyncHttpClient = new AsyncHttpClient(asyncHttpClientConfig);
-    }
-
-    public DefaultHttpInvoker() {
-        this.asyncHttpClient = new AsyncHttpClient();
+        this.baseUrl = config.getRpcAddress();
     }
 
     @Override
@@ -44,10 +41,11 @@ public class DefaultHttpInvoker implements HttpInvoker {
 
     private JSONObject httpRequestJson(RequestData requestData) {
         RequestBuilder requestBuilder = new RequestBuilder();
-        Request request = requestBuilder.setUrl(RPC_ADDR)
+        RpcAttribute rpcAttribute = requestData.getRpcAttribute();
+            Request request = requestBuilder.setUrl(baseUrl)
                 .setHeader("Content-Type", "application/json")
                 .setMethod("POST")
-                .setBody(JSON.toJSONString(requestData))
+                .setBody(JSON.toJSONString(requestData.getPayload()))
                 .setBodyEncoding("utf-8")
                 .build();
         try {
