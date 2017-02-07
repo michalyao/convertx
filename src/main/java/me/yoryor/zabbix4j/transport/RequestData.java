@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Data
 @Builder
-public class Request {
+public class RequestData {
     private String jsonrpc;
     private Map<String, Object> params;
     private String method;

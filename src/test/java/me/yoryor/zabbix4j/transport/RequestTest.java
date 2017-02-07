@@ -11,7 +11,7 @@ public class RequestTest {
         Map<String, Object> params = new HashMap<>();
         params.put("filter", new String[]{"New Host"});
         params.put("hostid", "10105");
-        Request request = Request.builder().auth("a").id(1).method("hello").params(params).build();
+        RequestData request = RequestData.builder().auth("a").id(1).method("hello").params(params).build();
         System.out.println(request);
     }
 
