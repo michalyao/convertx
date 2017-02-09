@@ -1,2 +1,2 @@
-# convertx
-Convert gracefully between POJOs.
+# Zabbix4j
+Zabbix API Java SDK.
