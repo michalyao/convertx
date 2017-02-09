@@ -41,11 +41,10 @@ public class DefaultHttpInvoker implements HttpInvoker {
 
     private JSONObject httpRequestJson(RequestData requestData) {
         RequestBuilder requestBuilder = new RequestBuilder();
-        RpcAttribute rpcAttribute = requestData.getRpcAttribute();
             Request request = requestBuilder.setUrl(baseUrl)
                 .setHeader("Content-Type", "application/json")
                 .setMethod("POST")
-                .setBody(JSON.toJSONString(requestData.getPayload()))
+                .setBody(JSON.toJSONString(requestData))
                 .setBodyEncoding("utf-8")
                 .build();
         try {

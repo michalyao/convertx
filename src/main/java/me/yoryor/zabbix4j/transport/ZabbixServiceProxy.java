@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class ZabbixServiceProxy implements InvocationHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ZabbixServiceProxy.class);
     private static final LongAdder counter = new LongAdder();
+    private volatile String auth;
     // rpc methodName -> RpcAttribute.
     private Map<String, RpcAttribute> rpcAttributeMap;
     private HttpInvoker httpInvoker;
@@ -33,6 +34,23 @@ public class ZabbixServiceProxy implements InvocationHandler {
         this.httpInvoker = httpInvoker;
         this.config = config;
         initApi(zabbixApis);
+        initAuth(config.getUser(), config.getPassword());
+    }
+
+    private void initAuth(String user, String password) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("user", user);
+        params.put("password", password);
+        RequestData requestData = RequestData.builder()
+                .auth(null)
+                .id(Integer.MAX_VALUE)
+                .jsonrpc("2.0")
+                .method("user.login")
+                .params(params)
+                .build();
+        JSONObject response = httpInvoker.execute(requestData);
+        this.auth = (String) response.get("result");
+        Objects.requireNonNull(auth, "获取授权失败，请检查用户名和密码");
     }
 
     private void initApi(Set<Class<?>> zabbixApis) {
@@ -108,7 +126,9 @@ public class ZabbixServiceProxy implements InvocationHandler {
         if (methodName == null) {
             throw new ZabbixApiException(String.format("api方法%s上缺少@MethodName注解，无法进行解析", apiName));
         }
-        RpcAttribute rpcAttribute = rpcAttributeMap.get(methodName.value());
+        String rpcMethod = methodName.value();
+        RpcAttribute rpcAttribute = rpcAttributeMap.get(rpcMethod);
+        rpcAttribute.setMethod(rpcMethod);
         if (rpcAttribute == null) {
             throw new ZabbixApiException(String.format("方法未正常初始化", apiName));
         }
@@ -118,19 +138,19 @@ public class ZabbixServiceProxy implements InvocationHandler {
             throw new ZabbixApiException(String.format("方法未正常初始化,参数个数不匹配", apiName));
         }
         int argIndex = 0;
-        Map<String, Object> jsonObj = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         Object result = null;
         while (true) {
             if (argIndex >= paramNum) {
-                Map<String, Object> payload = new HashMap<>();
-                payload.put("jsonrpc", "2.0");
-                payload.put("id", counter.intValue());
-                payload.put("auth", rpcAttribute.getAuth());
-                payload.put("method", methodName.value());
-                payload.put("params", jsonObj);
-                RequestData requestData = RequestData.builder().payload(payload).rpcAttribute(rpcAttribute).build();
+                RequestData requestData = RequestData.builder()
+                        .auth(auth)
+                        .id(counter.intValue())
+                        .jsonrpc("2.0")
+                        .method(rpcMethod)
+                        .params(params)
+                        .build();
                 JSONObject response = httpInvoker.execute(requestData);
-                Objects.requireNonNull(response, "Zabbix 返回空值，Zabbix Server 运行可能异常");
+                Objects.requireNonNull(response, "Zabbix 返回空值，Zabbix Server 运行可能出现异常!");
                 String jsonStr = JSON.toJSONString(response.get("result"));
                 // api调用发生异常，处理.
                 // TODO: 2017/2/9 Zabbix api 调用异常处理
@@ -146,12 +166,12 @@ public class ZabbixServiceProxy implements InvocationHandler {
                     result = JSON.parseObject(jsonStr, rpcAttribute.getReturnClass().getClazz());
                     break;
                 }
-                response = null;
+                result = null;
                 break;
             }
             // 构建 param
             Param param = rpcAttribute.getParams().get(argIndex);
-            jsonObj.put(param.getKey(), args[argIndex]);
+            params.put(param.getKey(), args[argIndex]);
             ++argIndex;
             counter.increment();
         }

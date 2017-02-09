@@ -6,6 +6,9 @@ import lombok.Data;
 public class Config {
     private String packagePath;
     private String rpcAddress;
+    // zabbix 用户名和密码
+    private String user;
+    private String password;
     private HttpConfig httpConfig = new HttpConfig();
 
     private static Config instance = new Config();
