@@ -13,8 +13,6 @@ public class RpcAttribute {
     private List<Param> params;
     private ReturnClass returnClass;
     private String method;
-    private Integer id;
-    private String jsonrpc = "2.0";
 
     public static class ReturnClass {
         private Class<?> clazz;

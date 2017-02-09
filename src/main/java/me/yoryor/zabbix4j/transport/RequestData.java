@@ -11,6 +11,10 @@ import java.util.Map;
 @Data
 @Builder
 public class RequestData {
-    private Map<String, Object> payload;
-    private RpcAttribute rpcAttribute;
+    private String auth;
+    private String method;
+    private String jsonrpc;
+    private Map<String, Object> params;
+    private Integer id;
+    
 }
