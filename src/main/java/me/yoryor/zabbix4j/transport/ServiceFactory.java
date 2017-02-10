@@ -33,9 +33,8 @@ public class ServiceFactory {
         if (ourInstance == null) {
             ourInstance = new ServiceFactory(config);
             return ourInstance;
-        } else {
-            throw new ZabbixApiException("没有执行配置信息");
         }
+        return ourInstance;
     }
 
 
