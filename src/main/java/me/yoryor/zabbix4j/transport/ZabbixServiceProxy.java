@@ -173,8 +173,8 @@ public class ZabbixServiceProxy implements InvocationHandler {
             Param param = rpcAttribute.getParams().get(argIndex);
             params.put(param.getKey(), args[argIndex]);
             ++argIndex;
-            counter.increment();
         }
+        counter.increment();
         return result;
     }
 }
