@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MethodName {
-    String value();
+public @interface RpcMethod {
+    String name();
+
+    int id();
 }

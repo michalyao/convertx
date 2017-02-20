@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class Config {
-    private String packagePath;
+    private String packagePath = "me.yoryor.zabbix4j.service";
     private String rpcAddress;
     // zabbix 用户名和密码
     private String user;

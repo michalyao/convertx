@@ -6,6 +6,8 @@ import me.yoryor.zabbix4j.transport.ServiceFactory;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ApplicationServiceTest {
     @Test
@@ -18,9 +20,8 @@ public class ApplicationServiceTest {
         ArrayList<String> hostids = new ArrayList<>();
         hostids.add("10105");
         Filter filter = new Filter();
-        filter.setKey("host");
-        filter.setValue("New Host");
-        String maps = ServiceFactory.getInstance(config)
+        filter.setHost(Collections.singletonList("New Host"));
+        List<Object> maps = ServiceFactory.getInstance(config)
                 .getZabbixService(HostService.class).getHostIdByName(filter);
         // 获取id
         System.out.println(maps);

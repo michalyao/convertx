@@ -31,17 +31,8 @@ public class DefaultHttpInvoker implements HttpInvoker {
 
     @Override
     public JSONObject execute(RequestData requestData) {
-        return httpRequestJson(requestData);
-    }
-
-    @Override
-    public void close() throws IOException {
-        this.asyncHttpClient.close();
-    }
-
-    private JSONObject httpRequestJson(RequestData requestData) {
         RequestBuilder requestBuilder = new RequestBuilder();
-            Request request = requestBuilder.setUrl(baseUrl)
+        Request request = requestBuilder.setUrl(baseUrl)
                 .setHeader("Content-Type", "application/json")
                 .setMethod("POST")
                 .setBody(JSON.toJSONString(requestData))
@@ -54,4 +45,10 @@ public class DefaultHttpInvoker implements HttpInvoker {
             throw new ZabbixApiException(e);
         }
     }
+
+    @Override
+    public void close() throws IOException {
+        this.asyncHttpClient.close();
+    }
+
 }

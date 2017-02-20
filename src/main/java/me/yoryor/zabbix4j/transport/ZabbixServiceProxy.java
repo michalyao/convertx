@@ -2,7 +2,7 @@ package me.yoryor.zabbix4j.transport;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import me.yoryor.zabbix4j.annotation.MethodName;
+import me.yoryor.zabbix4j.annotation.RpcMethod;
 import me.yoryor.zabbix4j.annotation.ParamEntry;
 import me.yoryor.zabbix4j.common.Config;
 import me.yoryor.zabbix4j.common.ZabbixApiException;
@@ -58,13 +58,14 @@ public class ZabbixServiceProxy implements InvocationHandler {
             Method[] methods = clazz.getMethods();
             for (Method method: methods) {
                 RpcAttribute rpcAttribute = new RpcAttribute();
-                String methodName = method.getAnnotation(MethodName.class).value();
+                String methodName = method.getAnnotation(RpcMethod.class).name();
+                int methodId = method.getAnnotation(RpcMethod.class).id();
                 if (rpcAttributeMap.get(methodName) != null) {
                     throw new ZabbixApiException(String.format("rpc方法%s重复,请检查注释%s", methodName, clazz.getSimpleName()+ "." + method.getName()));
                 }
                 this.initParams(rpcAttribute, method, clazz);
                 this.initReturnClass(rpcAttribute, method, clazz);
-                this.rpcAttributeMap.put(methodName, rpcAttribute);
+                this.rpcAttributeMap.put(methodName + methodId, rpcAttribute);
             }
         }
     }
@@ -122,12 +123,13 @@ public class ZabbixServiceProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String apiName = method.getDeclaringClass().getSimpleName() + "." + method.getName();
-        MethodName methodName = method.getAnnotation(MethodName.class);
-        if (methodName == null) {
+        RpcMethod methodAnnotation = method.getAnnotation(RpcMethod.class);
+        if (methodAnnotation == null) {
             throw new ZabbixApiException(String.format("api方法%s上缺少@MethodName注解，无法进行解析", apiName));
         }
-        String rpcMethod = methodName.value();
-        RpcAttribute rpcAttribute = rpcAttributeMap.get(rpcMethod);
+        String rpcMethod = methodAnnotation.name();
+        String key = rpcMethod + methodAnnotation.id();
+        RpcAttribute rpcAttribute = rpcAttributeMap.get(key);
         rpcAttribute.setMethod(rpcMethod);
         if (rpcAttribute == null) {
             throw new ZabbixApiException(String.format("方法未正常初始化", apiName));

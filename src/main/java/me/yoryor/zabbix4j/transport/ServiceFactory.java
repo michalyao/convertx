@@ -31,8 +31,10 @@ public class ServiceFactory {
             config = new Config();
         }
         if (ourInstance == null) {
-            ourInstance = new ServiceFactory(config);
-            return ourInstance;
+            synchronized (ServiceFactory.class) {
+                ourInstance = new ServiceFactory(config);
+                return ourInstance;
+            }
         }
         return ourInstance;
     }
